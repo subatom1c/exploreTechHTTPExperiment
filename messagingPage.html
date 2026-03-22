@@ -1,0 +1,34 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>e29 messages</title>
+        <link rel="stylesheet" href="styles.css">
+        <script src="/frontend.js" defer></script>
+    </head>
+    <body data-page="messaging">
+    <main class="page">
+        <header class="chat-header">
+            <div>
+                <h1>Let&apos;s message our friends</h1>
+                <p class="subtitle">Signed in as <strong id="active-username"></strong></p>
+            </div>
+            <form action="/logout" method="post" class="logout-form">
+                <button type="submit" class="secondary">Log out</button>
+            </form>
+        </header>
+
+        <div id="flash-area" class="flash-list" role="status" aria-live="polite" hidden></div>
+
+        <form action="/message" method="post">
+            <input type="text" name="message" placeholder="Write a message" maxlength="240" required>
+            <button type="submit">Send Message</button>
+        </form>
+
+        <section class="messages-panel" aria-label="Recent messages">
+            <ul id="messages-list" class="messages-list"></ul>
+            <p id="empty-state" class="empty-state">No messages yet. Send the first one.</p>
+        </section>
+    </main>
+    </body>
+</html>

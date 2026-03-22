@@ -1,0 +1,308 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+:root {
+    --bg-top: #f3efe6;
+    --bg-bottom: #dbe7f5;
+    --panel: rgba(255, 255, 255, 0.8);
+    --panel-border: rgba(27, 48, 74, 0.12);
+    --text: #1b304a;
+    --text-muted: #3f5b7a;
+    --accent: #e36414;
+    --accent-hover: #c24f08;
+    --input-bg: rgba(255, 255, 255, 0.88);
+    --ring: rgba(227, 100, 20, 0.35);
+    --shadow: 0 18px 45px rgba(27, 48, 74, 0.16);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+    color: var(--text);
+    background:
+        radial-gradient(circle at 12% 18%, rgba(227, 100, 20, 0.18), transparent 30%),
+        radial-gradient(circle at 86% 82%, rgba(17, 111, 164, 0.2), transparent 36%),
+        linear-gradient(160deg, var(--bg-top), var(--bg-bottom));
+    overflow-x: hidden;
+}
+
+body::before,
+body::after {
+    content: '';
+    position: fixed;
+    z-index: -1;
+    border-radius: 999px;
+    filter: blur(10px);
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+body::before {
+    width: 280px;
+    height: 280px;
+    background: #ffd7b3;
+    top: -80px;
+    right: -40px;
+    animation: drift 9s ease-in-out infinite;
+}
+
+body::after {
+    width: 260px;
+    height: 260px;
+    background: #b7dfff;
+    bottom: -70px;
+    left: -50px;
+    animation: drift 11s ease-in-out infinite reverse;
+}
+
+h1,
+p,
+form {
+    width: min(92vw, 520px);
+}
+
+.page {
+    width: min(92vw, 720px);
+}
+
+h1 {
+    margin: 0 0 0.55rem;
+    font-family: 'Sora', 'Segoe UI', sans-serif;
+    font-size: clamp(1.75rem, 3.4vw, 2.5rem);
+    letter-spacing: -0.03em;
+    line-height: 1.08;
+    text-wrap: balance;
+    animation: rise 0.55s ease-out;
+}
+
+p {
+    margin: 1rem 0 0;
+    color: var(--text-muted);
+    font-size: 1rem;
+    animation: fade 0.75s ease-out;
+}
+
+.subtitle {
+    margin-top: 0.4rem;
+}
+
+.chat-header {
+    width: min(92vw, 720px);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.logout-form {
+    width: auto;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+form {
+    margin-top: 0.95rem;
+    padding: 1.05rem;
+    border: 1px solid var(--panel-border);
+    background: var(--panel);
+    backdrop-filter: blur(10px);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    animation: rise 0.7s ease-out;
+}
+
+input[type='text'] {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid rgba(27, 48, 74, 0.2);
+    border-radius: 12px;
+    font: inherit;
+    color: var(--text);
+    background: var(--input-bg);
+    padding: 0.78rem 0.9rem;
+    transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+input[type='text']::placeholder {
+    color: rgba(63, 91, 122, 0.68);
+}
+
+input[type='text']:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #ffffff;
+    box-shadow: 0 0 0 4px var(--ring);
+}
+
+button {
+    border: 0;
+    border-radius: 12px;
+    font: inherit;
+    font-weight: 600;
+    color: #ffffff;
+    background: var(--accent);
+    padding: 0.78rem 1rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 120ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+button:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 8px 20px rgba(227, 100, 20, 0.35);
+}
+
+button:active {
+    transform: translateY(1px) scale(0.99);
+}
+
+button.secondary {
+    background: #3f5b7a;
+}
+
+button.secondary:hover {
+    background: #334b66;
+    box-shadow: 0 8px 20px rgba(51, 75, 102, 0.3);
+}
+
+.flash-list {
+    width: min(92vw, 720px);
+    margin-top: 0.95rem;
+}
+
+.flash {
+    margin: 0.5rem 0;
+    padding: 0.7rem 0.9rem;
+    border-radius: 10px;
+    font-size: 0.94rem;
+}
+
+.flash-error {
+    color: #7a2317;
+    background: rgba(235, 90, 70, 0.18);
+    border: 1px solid rgba(235, 90, 70, 0.3);
+}
+
+.flash-success {
+    color: #134732;
+    background: rgba(59, 179, 126, 0.18);
+    border: 1px solid rgba(59, 179, 126, 0.3);
+}
+
+.messages-panel {
+    width: min(92vw, 720px);
+    margin-top: 0.95rem;
+    padding: 1.05rem;
+    border: 1px solid var(--panel-border);
+    background: var(--panel);
+    backdrop-filter: blur(10px);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    animation: rise 0.82s ease-out;
+}
+
+.messages-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.65rem;
+}
+
+.messages-list li {
+    padding: 0.7rem 0.8rem;
+    border: 1px solid rgba(27, 48, 74, 0.14);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.message-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.message-row time {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+.messages-list p {
+    margin: 0.35rem 0 0;
+    color: var(--text);
+}
+
+.empty-state {
+    margin: 0;
+    color: var(--text-muted);
+}
+
+@media (max-width: 640px) {
+    body {
+        padding: 1rem;
+    }
+
+    form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .chat-header {
+        flex-direction: column;
+    }
+
+    .logout-form {
+        width: 100%;
+    }
+
+    button {
+        width: 100%;
+    }
+}
+
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes drift {
+    0%,
+    100% {
+        transform: translateY(0px) translateX(0px);
+    }
+    50% {
+        transform: translateY(-8px) translateX(4px);
+    }
+}
