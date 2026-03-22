@@ -20,14 +20,15 @@
 
         <div id="flash-area" class="flash-list" role="status" aria-live="polite" hidden></div>
 
-        <form action="/message" method="post">
+        <form action="/message" method="post" class="compose-form">
+            <input type="text" name="recipient" placeholder="Send to username" maxlength="32" required>
             <input type="text" name="message" placeholder="Write a message" maxlength="240" required>
             <button type="submit">Send Message</button>
         </form>
 
         <section class="messages-panel" aria-label="Recent messages">
             <ul id="messages-list" class="messages-list"></ul>
-            <p id="empty-state" class="empty-state">No messages yet. Send the first one.</p>
+            <p id="empty-state" class="empty-state">No messages in your inbox yet.</p>
         </section>
     </main>
     </body>

@@ -150,6 +150,10 @@ input[type='text']:focus {
     box-shadow: 0 0 0 4px var(--ring);
 }
 
+.compose-form input[name='recipient'] {
+    max-width: 210px;
+}
+
 button {
     border: 0;
     border-radius: 12px;
@@ -262,6 +266,10 @@ button.secondary:hover {
     form {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .compose-form input[name='recipient'] {
+        max-width: none;
     }
 
     .chat-header {
