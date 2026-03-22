@@ -198,6 +198,14 @@ def stylesheet() -> str:
 def frontend_script() -> str:
     return send_from_directory(BASE_DIR, "frontend.js")
 
+@app.before_request
+def log_request():
+    print("HIT:", request.method, request.path)
+
+@app.get("/ping")
+def ping():
+    return "pong", 200
+
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=8080, debug=True)
