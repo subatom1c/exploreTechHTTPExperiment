@@ -113,6 +113,15 @@ p {
     box-shadow: none;
 }
 
+.logout-form-inline {
+    width: min(92vw, 720px);
+    margin-top: 0.95rem;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
 form {
     margin-top: 0.95rem;
     padding: 1.05rem;
@@ -221,6 +230,50 @@ button.secondary:hover {
     animation: rise 0.82s ease-out;
 }
 
+.users-panel {
+    width: min(92vw, 720px);
+    margin-top: 0.95rem;
+    padding: 1.05rem;
+    border: 1px solid var(--panel-border);
+    background: var(--panel);
+    backdrop-filter: blur(10px);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    animation: rise 0.82s ease-out;
+}
+
+.users-panel h3 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1rem;
+    color: var(--text);
+}
+
+.users-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.user-item {
+    padding: 0.65rem 0.8rem;
+    border: 1px solid rgba(27, 48, 74, 0.14);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.7);
+    transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+
+.user-item:hover {
+    background: rgba(227, 100, 20, 0.1);
+    border-color: var(--accent);
+    transform: translateX(4px);
+}
+
+.user-item:active {
+    transform: translateX(2px) scale(0.98);
+}
+
 .messages-list {
     list-style: none;
     margin: 0;
@@ -258,6 +311,43 @@ button.secondary:hover {
     color: var(--text-muted);
 }
 
+.leaderboard-list {
+    list-style: decimal;
+    margin: 0;
+    padding: 0 0 0 1.8rem;
+    display: grid;
+    gap: 0.65rem;
+}
+
+.leaderboard-item {
+    padding: 0.7rem 0.8rem;
+    border: 1px solid rgba(27, 48, 74, 0.14);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.lb-name {
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+}
+
+.lb-count {
+    font-size: 0.9rem;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+#leaderboard-section h2 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1.3rem;
+    color: var(--text);
+}
+
 @media (max-width: 640px) {
     body {
         padding: 1rem;
@@ -276,7 +366,11 @@ button.secondary:hover {
         flex-direction: column;
     }
 
-    .logout-form {
+    .logout-form-inline {
+        width: 100% !important;
+    }
+
+    .logout-form-inline button {
         width: 100%;
     }
 

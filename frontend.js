@@ -74,6 +74,100 @@ function renderMessages(items) {
     }
 }
 
+function renderLeaderboard(items) {
+    const list = document.getElementById("leaderboard-list");
+    const empty = document.getElementById("leaderboard-empty");
+    if (!list || !empty) {
+        return;
+    }
+
+    list.replaceChildren();
+
+    if (!items.length) {
+        empty.hidden = false;
+        return;
+    }
+
+    empty.hidden = true;
+
+    for (const item of items) {
+        const li = document.createElement("li");
+        li.className = "leaderboard-item";
+
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "lb-name";
+        nameSpan.textContent = item.username;
+
+        const countSpan = document.createElement("span");
+        countSpan.className = "lb-count";
+        countSpan.textContent = `${item.message_count} message${item.message_count !== 1 ? "s" : ""}`;
+
+        li.append(nameSpan, countSpan);
+        list.append(li);
+    }
+}
+
+function renderUsers(items) {
+    const list = document.getElementById("users-list");
+    const empty = document.getElementById("users-empty");
+    if (!list || !empty) {
+        return;
+    }
+
+    list.replaceChildren();
+
+    if (!items.length) {
+        empty.hidden = false;
+        return;
+    }
+
+    empty.hidden = true;
+
+    for (const username of items) {
+        const li = document.createElement("li");
+        li.className = "user-item";
+        li.textContent = username;
+        li.style.cursor = "pointer";
+        
+        li.addEventListener("click", () => {
+            const recipientInput = document.querySelector('input[name="recipient"]');
+            if (recipientInput) {
+                recipientInput.value = username;
+                recipientInput.focus();
+            }
+        });
+
+        list.append(li);
+    }
+}
+
+async function subscribeToUpdates() {
+    const page = document.body.dataset.page;
+    if (page !== "messaging") return;
+
+    const updateData = async () => {
+        try {
+            const payload = await fetchJson("/api/messages");
+            renderMessages(payload.messages || []);
+        } catch (error) {
+            console.error("Failed to fetch messages:", error);
+        }
+
+        try {
+            const usersPayload = await fetchJson("/api/users");
+            renderUsers(usersPayload.users || []);
+        } catch (error) {
+            console.error("Failed to fetch users:", error);
+        }
+    };
+
+    // Initial update
+    await updateData();
+
+    // Poll for updates every 3 seconds
+    setInterval(updateData, 3000);
+}
+
 async function bootstrapMessagingPage() {
     try {
         const sessionState = await fetchJson("/api/session");
@@ -82,8 +176,8 @@ async function bootstrapMessagingPage() {
             usernameNode.textContent = sessionState.username;
         }
 
-        const payload = await fetchJson("/api/messages");
-        renderMessages(payload.messages || []);
+        // Start subscribing to updates
+        await subscribeToUpdates();
     } catch {
         const params = new URLSearchParams({
             notice: "Please authenticate first.",

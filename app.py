@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import os
+import json
 from datetime import datetime, timezone
 from urllib.parse import urlencode
+import uuid
 
 from flask import Flask, jsonify, redirect, render_template, request, send_from_directory, session, url_for
 
@@ -10,6 +12,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MAX_USERNAME_LEN = 32
 MAX_MESSAGE_LEN = 240
 MAX_STORED_MESSAGES = 100
+PACKETS_DIR = os.path.join(BASE_DIR, "packets")
 
 USERS: set[str] = set()
 MESSAGES: list[dict[str, str]] = []
@@ -17,17 +20,38 @@ MESSAGES: list[dict[str, str]] = []
 app = Flask(__name__, template_folder=str(BASE_DIR))
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-change-this-secret")
 
+# Create packets directory if it doesn't exist
+os.makedirs(PACKETS_DIR, exist_ok=True)
+
+
+def _log_packet(from_username: str, to_username: str, message: str) -> None:
+    """Log packet data to a file in the packets directory."""
+    packet_data = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "from_username": from_username,
+        "to_username": to_username,
+        "message": message,
+    }
+    
+    # Create a unique filename with uuid and timestamp
+    filename = f"packet_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}.json"
+    filepath = os.path.join(PACKETS_DIR, filename)
+    
+    with open(filepath, "w") as f:
+        json.dump(packet_data, f, indent=2)
+
+
 
 def _load_users() -> list[str]:
     return sorted(USERS)
 
 
 def _register_user(username: str) -> None:
-    USERS.add(username)
+    USERS.add(username.lower())
 
 
 def _user_exists(username: str) -> bool:
-    return username in USERS
+    return username.lower() in USERS
 
 
 def _load_messages() -> list[dict[str, str]]:
@@ -97,7 +121,7 @@ def auth_page_alias() -> str:
 
 @app.post("/authentication")
 def authenticate() -> str:
-    username = request.form.get("username", "").strip()
+    username = request.form.get("username", "").strip().lower()
 
     if not username:
         return _redirect_with_notice("index", "Username is required.", "error")
@@ -130,7 +154,7 @@ def message() -> str:
     if not username:
         return _redirect_with_notice("index", "Please authenticate first.", "error")
 
-    recipient = request.form.get("recipient", "").strip()
+    recipient = request.form.get("recipient", "").strip().lower()
     text = request.form.get("message", "").strip()
 
     if not recipient:
@@ -161,6 +185,9 @@ def message() -> str:
         }
     )
     _save_messages(all_messages)
+    
+    # Log packet to file
+    _log_packet(username, recipient, text)
 
     return _redirect_with_notice("messages", f"Message sent to {recipient}.", "success")
 
@@ -187,6 +214,44 @@ def messages_api() -> tuple[str, int] | str:
     stored = _load_messages()
     inbox = [item for item in stored if item.get("to_username") == username]
     return jsonify({"messages": _format_for_view(inbox)})
+
+
+@app.get("/api/users")
+def users_api() -> tuple[str, int] | str:
+    username = session.get("username")
+    if not username:
+        return jsonify({"error": "unauthorized"}), 401
+    
+    # Get all users except the current user
+    all_users = [u for u in _load_users() if u != username]
+    return jsonify({"users": all_users})
+
+
+@app.get("/api/leaderboard")
+def leaderboard_api() -> tuple[str, int] | str:
+    if not session.get("username"):
+        return jsonify({"error": "unauthorized"}), 401
+    
+    stored = _load_messages()
+    message_counts: dict[str, int] = {}
+    
+    # Initialize all users with 0 messages
+    for user in _load_users():
+        message_counts[user] = 0
+    
+    # Count messages sent by each user
+    for item in stored:
+        sender = item.get("from_username", "")
+        if sender:
+            message_counts[sender] = message_counts.get(sender, 0) + 1
+    
+    # Sort by message count (descending), then by username (ascending)
+    leaderboard = sorted(
+        [{"username": user, "message_count": count} for user, count in message_counts.items()],
+        key=lambda x: (-x["message_count"], x["username"])
+    )
+    
+    return jsonify({"leaderboard": leaderboard})
 
 
 @app.get("/styles.css")

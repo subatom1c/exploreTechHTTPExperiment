@@ -13,23 +13,30 @@
                 <h1>Let&apos;s message our friends</h1>
                 <p class="subtitle">Signed in as <strong id="active-username"></strong></p>
             </div>
-            <form action="/logout" method="post" class="logout-form">
-                <button type="submit" class="secondary">Log out</button>
-            </form>
         </header>
 
         <div id="flash-area" class="flash-list" role="status" aria-live="polite" hidden></div>
 
-        <form action="/message" method="post" class="compose-form">
+        <section class="users-panel" id="users-section" aria-label="Users">
+            <h3>Send a message to:</h3>
+            <ul id="users-list" class="users-list"></ul>
+            <p id="users-empty" class="empty-state" hidden>No other users available.</p>
+        </section>
+
+        <form action="/message" method="post" class="compose-form" id="compose-form">
             <input type="text" name="recipient" placeholder="Send to username" maxlength="32" required>
             <input type="text" name="message" placeholder="Write a message" maxlength="240" required>
             <button type="submit">Send Message</button>
         </form>
 
-        <section class="messages-panel" aria-label="Recent messages">
+        <section class="messages-panel" id="messages-section" aria-label="Recent messages">
             <ul id="messages-list" class="messages-list"></ul>
             <p id="empty-state" class="empty-state">No messages in your inbox yet.</p>
         </section>
+
+        <form action="/logout" method="post" class="logout-form-inline">
+            <button type="submit" class="secondary">Log out</button>
+        </form>
     </main>
     </body>
 </html>
