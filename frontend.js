@@ -35,6 +35,78 @@ async function fetchJson(url) {
     return response.json();
 }
 
+async function postForm(url, payload) {
+    const response = await fetch(url, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Accept: "application/json",
+        },
+        body: new URLSearchParams(payload),
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        throw new Error(data.error || `Request failed for ${url}`);
+    }
+    return data;
+}
+
+function showInlineNotice(text, level = "success") {
+    const flashArea = document.getElementById("flash-area");
+    if (!flashArea || !text) {
+        return;
+    }
+
+    const p = document.createElement("p");
+    p.className = `flash flash-${level}`;
+    p.textContent = text;
+    flashArea.replaceChildren(p);
+    flashArea.hidden = false;
+}
+
+let userVoteState = {
+    hasVoted: false,
+    votedFor: null,
+};
+let activeUsername = null;
+
+async function refreshVotePanels() {
+    const [usersPayload, leaderboardPayload] = await Promise.all([
+        fetchJson("/api/users"),
+        fetchJson("/api/vote-leaderboard"),
+    ]);
+
+    renderUsers(usersPayload.users || []);
+    renderLeaderboard(leaderboardPayload.leaderboard || []);
+}
+
+async function submitVote(username) {
+    return postForm("/vote", { target: username });
+}
+
+function setupShowCommandForm() {
+    const composeForm = document.getElementById("compose-form");
+    const recipientInput = composeForm?.querySelector('input[name="recipient"]');
+    const messageInput = composeForm?.querySelector('input[name="message"]');
+    if (!composeForm || !recipientInput || !messageInput) {
+        return;
+    }
+
+    const recipientDefaultPlaceholder = "Send to username";
+
+    const syncCommandMode = () => {
+        const isShowCommand = messageInput.value.trim().toLowerCase() === "show";
+        recipientInput.required = !isShowCommand;
+        recipientInput.placeholder = isShowCommand ? "Recipient ignored for show command" : recipientDefaultPlaceholder;
+    };
+
+    messageInput.addEventListener("input", syncCommandMode);
+    composeForm.addEventListener("submit", syncCommandMode);
+    syncCommandMode();
+}
+
 function renderMessages(items) {
     const list = document.getElementById("messages-list");
     const empty = document.getElementById("empty-state");
@@ -75,8 +147,8 @@ function renderMessages(items) {
 }
 
 function renderLeaderboard(items) {
-    const list = document.getElementById("leaderboard-list");
-    const empty = document.getElementById("leaderboard-empty");
+    const list = document.getElementById("vote-leaderboard-list");
+    const empty = document.getElementById("vote-leaderboard-empty");
     if (!list || !empty) {
         return;
     }
@@ -94,15 +166,61 @@ function renderLeaderboard(items) {
         const li = document.createElement("li");
         li.className = "leaderboard-item";
 
+        const details = document.createElement("div");
+        details.className = "lb-details";
+
         const nameSpan = document.createElement("span");
         nameSpan.className = "lb-name";
         nameSpan.textContent = item.username;
 
         const countSpan = document.createElement("span");
         countSpan.className = "lb-count";
-        countSpan.textContent = `${item.message_count} message${item.message_count !== 1 ? "s" : ""}`;
+        countSpan.textContent = `${item.vote_count} vote${item.vote_count !== 1 ? "s" : ""}`;
 
-        li.append(nameSpan, countSpan);
+        details.append(nameSpan, countSpan);
+
+        const voteButton = document.createElement("button");
+        voteButton.type = "button";
+        voteButton.className = "vote-button";
+
+        if (item.username === activeUsername) {
+            voteButton.textContent = "You";
+            voteButton.disabled = true;
+        } else if (userVoteState.hasVoted) {
+            const didVoteForCurrentItem = userVoteState.votedFor === item.username;
+            voteButton.textContent = didVoteForCurrentItem ? "Voted" : "Vote";
+            voteButton.disabled = true;
+        } else {
+            voteButton.textContent = "Vote";
+        }
+
+        voteButton.addEventListener("click", async () => {
+            if (item.username === activeUsername) {
+                showInlineNotice("You cannot vote for yourself.", "error");
+                return;
+            }
+
+            if (userVoteState.hasVoted) {
+                showInlineNotice("You already used your one vote.", "error");
+                return;
+            }
+
+            voteButton.disabled = true;
+            try {
+                const payload = await submitVote(item.username);
+                userVoteState.hasVoted = true;
+                userVoteState.votedFor = payload.target || item.username;
+                showInlineNotice(payload.notice || `Vote sent to ${item.username}.`, "success");
+                await refreshVotePanels();
+            } catch (error) {
+                const message = error instanceof Error ? error.message : "Failed to vote.";
+                showInlineNotice(message, "error");
+            } finally {
+                voteButton.disabled = false;
+            }
+        });
+
+        li.append(details, voteButton);
         list.append(li);
     }
 }
@@ -123,20 +241,37 @@ function renderUsers(items) {
 
     empty.hidden = true;
 
-    for (const username of items) {
+    for (const item of items) {
+        const username = typeof item === "string" ? item : item.username;
+
         const li = document.createElement("li");
         li.className = "user-item";
-        li.textContent = username;
-        li.style.cursor = "pointer";
-        
-        li.addEventListener("click", () => {
+        li.tabIndex = 0;
+        li.setAttribute("role", "button");
+        li.setAttribute("aria-label", `Select ${username} as recipient`);
+
+        const identity = document.createElement("span");
+        identity.className = "user-name-button";
+        identity.textContent = username;
+        identity.title = "Click row to fill recipient";
+
+        const selectRecipient = () => {
             const recipientInput = document.querySelector('input[name="recipient"]');
             if (recipientInput) {
                 recipientInput.value = username;
                 recipientInput.focus();
             }
+        };
+
+        li.addEventListener("click", selectRecipient);
+        li.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                selectRecipient();
+            }
         });
 
+        li.append(identity);
         list.append(li);
     }
 }
@@ -154,10 +289,9 @@ async function subscribeToUpdates() {
         }
 
         try {
-            const usersPayload = await fetchJson("/api/users");
-            renderUsers(usersPayload.users || []);
+            await refreshVotePanels();
         } catch (error) {
-            console.error("Failed to fetch users:", error);
+            console.error("Failed to fetch users or vote leaderboard:", error);
         }
     };
 
@@ -175,6 +309,14 @@ async function bootstrapMessagingPage() {
         if (usernameNode) {
             usernameNode.textContent = sessionState.username;
         }
+        activeUsername = sessionState.username;
+
+        userVoteState = {
+            hasVoted: Boolean(sessionState.has_voted),
+            votedFor: sessionState.voted_for || null,
+        };
+
+        setupShowCommandForm();
 
         // Start subscribing to updates
         await subscribeToUpdates();

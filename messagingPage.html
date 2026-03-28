@@ -17,11 +17,19 @@
 
         <div id="flash-area" class="flash-list" role="status" aria-live="polite" hidden></div>
 
-        <section class="users-panel" id="users-section" aria-label="Users">
-            <h3>Send a message to:</h3>
-            <ul id="users-list" class="users-list"></ul>
-            <p id="users-empty" class="empty-state" hidden>No other users available.</p>
-        </section>
+        <div class="top-panels">
+            <section class="users-panel" id="users-section" aria-label="Users">
+                <h3>Send a message to:</h3>
+                <ul id="users-list" class="users-list"></ul>
+                <p id="users-empty" class="empty-state" hidden>No other users available.</p>
+            </section>
+
+            <aside class="vote-leaderboard-panel" id="vote-leaderboard-section" aria-label="Vote leaderboard">
+                <h3>Vote Leaderboard (Vote Here)</h3>
+                <ol id="vote-leaderboard-list" class="leaderboard-list"></ol>
+                <p id="vote-leaderboard-empty" class="empty-state" hidden>No votes yet.</p>
+            </aside>
+        </div>
 
         <form action="/message" method="post" class="compose-form" id="compose-form">
             <input type="text" name="recipient" placeholder="Send to username" maxlength="32" required>

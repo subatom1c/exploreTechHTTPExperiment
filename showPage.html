@@ -1,0 +1,34 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>e29 show winner</title>
+        <link rel="stylesheet" href="styles.css">
+        <script src="/frontend.js" defer></script>
+    </head>
+    <body data-page="show">
+    <main class="page">
+        <header class="chat-header">
+            <div>
+                <h1>Show The Vote Winner</h1>
+                <p class="subtitle">Signed in as <strong id="active-username"></strong></p>
+            </div>
+        </header>
+
+        <div id="flash-area" class="flash-list" role="status" aria-live="polite" hidden></div>
+
+        <section class="show-panel" aria-label="Current winner">
+            <h3>Current Result</h3>
+            <p id="winner-message" class="winner-message">Loading winner...</p>
+        </section>
+
+        <form action="/announce-winner" method="post" class="show-action-form">
+            <button type="submit">Announce Winner To Everyone</button>
+        </form>
+
+        <div class="show-links">
+            <a class="inline-link" href="/messages">Back to messages</a>
+        </div>
+    </main>
+    </body>
+</html>
